@@ -90,47 +90,31 @@ interface BinanceWsMessage {
   };
 }
 
-// Status indicator for debugging
-const status = document.createElement('div');
-status.style.cssText = 'position:fixed;top:10px;left:10px;color:#fff;font-size:12px;z-index:1000;';
-document.body.appendChild(status);
-
 function connectWebSocket() {
-  status.textContent = 'Connecting...';
   const ws = new WebSocket(WS_URL);
 
-  ws.onopen = () => {
-    console.log('WebSocket connected');
-    status.textContent = 'Connected - waiting for data...';
-  };
+  ws.onopen = () => console.log('WebSocket connected');
 
   ws.onmessage = (event) => {
     const msg: BinanceWsMessage = JSON.parse(event.data);
     const k = msg.k;
 
-    const candle = {
+    // Update chart with latest candle data
+    candleSeries.update({
       time: (k.t / 1000) as UTCTimestamp, // Convert ms to seconds!
       open: parseFloat(k.o),
       high: parseFloat(k.h),
       low: parseFloat(k.l),
       close: parseFloat(k.c),
-    };
-
-    // Update chart with latest candle data
-    candleSeries.update(candle);
-    status.textContent = `Live: $${candle.close.toFixed(2)}`;
+    });
   };
 
   ws.onclose = () => {
     console.log('WebSocket closed, reconnecting...');
-    status.textContent = 'Disconnected - reconnecting...';
     setTimeout(connectWebSocket, 1000);
   };
 
-  ws.onerror = (error) => {
-    console.error('WebSocket error:', error);
-    status.textContent = 'Error!';
-  };
+  ws.onerror = (error) => console.error('WebSocket error:', error);
 }
 
 // ============================================
