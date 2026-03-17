@@ -1,27 +1,563 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hant">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Binance Real-Time Chart</title>
+    <title>Polymarket Chart Template</title>
     <style>
+      :root {
+        --bg: #0b1220;
+        --panel: #0f172a;
+        --panel-2: #111827;
+        --panel-3: #1e293b;
+        --border: #334155;
+        --text: #e5e7eb;
+        --muted: #94a3b8;
+        --accent: #38bdf8;
+        --green: #22c55e;
+        --red: #ef4444;
+        --yellow: #facc15;
+        --pink: #f472b6;
+        --cyan: #22d3ee;
+      }
+
       * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
       }
+
+      html,
       body {
-        background: #131722;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        width: 100%;
+        height: 100%;
+        background: var(--bg);
+        color: var(--text);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       }
-      #chart {
-        width: 100vw;
+
+      body {
+        overflow: hidden;
+      }
+
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+
+      .app {
+        display: grid;
+        grid-template-columns: 320px minmax(0, 1fr);
+        width: 100%;
         height: 100vh;
+      }
+
+      .sidebar {
+        background: var(--panel);
+        border-right: 1px solid var(--border);
+        padding: 20px 16px;
+        overflow-y: auto;
+      }
+
+      .sidebar h1 {
+        font-size: 20px;
+        margin-bottom: 8px;
+      }
+
+      .sidebar .sub {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.5;
+        margin-bottom: 18px;
+      }
+
+      .section {
+        background: var(--panel-2);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 14px;
+        margin-bottom: 12px;
+      }
+
+      .section h2 {
+        font-size: 14px;
+        margin-bottom: 12px;
+        color: #f8fafc;
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 10px;
+      }
+
+      .field:last-child {
+        margin-bottom: 0;
+      }
+
+      .field label {
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      .field input,
+      .field select {
+        width: 100%;
+        background: var(--panel-3);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 10px 12px;
+        outline: none;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .radio-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .radio-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text);
+        font-size: 14px;
+      }
+
+      .tips {
+        font-size: 13px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .main {
+        display: grid;
+        grid-template-rows: auto auto minmax(0, 1fr) auto;
+        min-width: 0;
+        height: 100vh;
+        background: var(--bg);
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 18px 22px 12px;
+        border-bottom: 1px solid rgba(51, 65, 85, 0.45);
+      }
+
+      .title-wrap h2 {
+        font-size: 24px;
+        margin-bottom: 4px;
+      }
+
+      .title-wrap p {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .badge-row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .badge {
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: rgba(15, 23, 42, 0.9);
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .metrics {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+        padding: 14px 22px;
+      }
+
+      .metric-card {
+        background: var(--panel-2);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 14px;
+      }
+
+      .metric-label {
+        color: var(--muted);
+        font-size: 12px;
+        margin-bottom: 8px;
+      }
+
+      .metric-value {
+        font-size: 22px;
+        font-weight: 700;
+        margin-bottom: 6px;
+      }
+
+      .metric-desc {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .chart-stack {
+        display: grid;
+        grid-template-rows: minmax(280px, 1fr) 160px;
+        gap: 12px;
+        padding: 0 22px 18px;
+        min-height: 0;
+      }
+
+      .panel {
+        background: var(--panel-2);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        overflow: hidden;
+        min-height: 0;
+      }
+
+      .panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 14px;
+        border-bottom: 1px solid rgba(51, 65, 85, 0.45);
+      }
+
+      .panel-header h3 {
+        font-size: 14px;
+      }
+
+      .panel-header span {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      #chart,
+      #volume-chart {
+        width: 100%;
+        height: calc(100% - 49px);
+      }
+
+      .table-wrap {
+        padding: 0 22px 20px;
+      }
+
+      details.raw-data {
+        background: var(--panel-2);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        overflow: hidden;
+      }
+
+      details.raw-data > summary {
+        list-style: none;
+        cursor: pointer;
+        padding: 14px 16px;
+        font-size: 14px;
+        border-bottom: 1px solid rgba(51, 65, 85, 0.45);
+      }
+
+      details.raw-data[open] > summary {
+        background: rgba(15, 23, 42, 0.65);
+      }
+
+      .table-scroll {
+        max-height: 260px;
+        overflow: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      thead th {
+        position: sticky;
+        top: 0;
+        background: var(--panel-3);
+        color: var(--text);
+        text-align: left;
+        font-size: 13px;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      tbody td {
+        font-size: 13px;
+        color: #cbd5e1;
+        padding: 10px 12px;
+        border-bottom: 1px solid rgba(51, 65, 85, 0.35);
+      }
+
+      .status-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        margin-right: 6px;
+      }
+
+      .dot-green { background: var(--green); }
+      .dot-yellow { background: var(--yellow); }
+      .dot-pink { background: var(--pink); }
+      .dot-cyan { background: var(--cyan); }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      @media (max-width: 1180px) {
+        .app {
+          grid-template-columns: 280px minmax(0, 1fr);
+        }
+
+        .metrics {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 900px) {
+        body {
+          overflow: auto;
+        }
+
+        .app {
+          grid-template-columns: 1fr;
+          height: auto;
+          min-height: 100vh;
+        }
+
+        .sidebar,
+        .main {
+          height: auto;
+        }
+
+        .main {
+          grid-template-rows: auto auto auto auto;
+        }
+
+        .chart-stack {
+          grid-template-rows: 420px 180px;
+        }
+
+        .metrics {
+          grid-template-columns: 1fr;
+        }
       }
     </style>
   </head>
   <body>
-    <div id="chart"></div>
+    <div class="app">
+      <!-- 左側控制區：之後 main.ts 可以綁定事件 -->
+      <aside class="sidebar">
+        <h1>📈 Polymarket Chart</h1>
+        <p class="sub">
+          這是先給你改版用的 HTML 骨架。重點是把 UI 區塊先拆清楚，之後你要接 CSV、切比賽、切 outcome、切模式，都比較好維護。
+        </p>
+
+        <section class="section">
+          <h2>⚙️ 基本設定</h2>
+
+          <div class="field">
+            <label for="match-select">比賽</label>
+            <select id="match-select">
+              <option>lol-wb-tes-2026-03-02</option>
+              <option>lol-we-lng-2026-02-11</option>
+              <option>lol-blg-jdg-2026-03-08</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="outcome-select">Outcome</label>
+            <select id="outcome-select">
+              <option>Top Esports</option>
+              <option>Weibo Gaming</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="bucket-select">時間粒度</label>
+            <select id="bucket-select">
+              <option>30 秒</option>
+              <option>1 分鐘</option>
+              <option>2.5 分鐘</option>
+              <option selected>5 分鐘</option>
+              <option>15 分鐘</option>
+            </select>
+          </div>
+        </section>
+
+        <section class="section">
+          <h2>📊 圖表模式</h2>
+          <div class="radio-group">
+            <label class="radio-item">
+              <input type="radio" name="chart-mode" value="candlestick" checked />
+              <span>K 線圖 + 成交量</span>
+            </label>
+            <label class="radio-item">
+              <input type="radio" name="chart-mode" value="dual" />
+              <span>雙隊股價對比</span>
+            </label>
+          </div>
+        </section>
+
+        <section class="section">
+          <h2>🔖 事件標記</h2>
+          <div class="field">
+            <label for="match-start">Match Start</label>
+            <input id="match-start" type="text" placeholder="2026-03-02 19:00:00" />
+          </div>
+          <div class="field">
+            <label for="result-known">Result Known</label>
+            <input id="result-known" type="text" placeholder="2026-03-02 22:14:00" />
+          </div>
+        </section>
+
+        <section class="section">
+          <h2>📅 日期範圍</h2>
+          <div class="row">
+            <div class="field">
+              <label for="date-start">開始</label>
+              <input id="date-start" type="date" />
+            </div>
+            <div class="field">
+              <label for="date-end">結束</label>
+              <input id="date-end" type="date" />
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <h2>💡 備註</h2>
+          <div class="tips">
+            • 上方主圖預留給價格圖（K 線或雙線）<br />
+            • 下方副圖預留給 volume<br />
+            • 原始資料表保留在最下方<br />
+            • 目前先放假資料，等你把 main.ts 接上真資料
+          </div>
+        </section>
+      </aside>
+
+      <!-- 右側主要顯示區 -->
+      <main class="main">
+        <header class="topbar">
+          <div class="title-wrap">
+            <h2>📈 Polymarket Chart</h2>
+            <p>
+              比賽：<strong id="current-match">lol-wb-tes-2026-03-02</strong>
+              <span class="muted">｜</span>
+              粒度：<strong id="current-bucket">5 分鐘</strong>
+              <span class="muted">｜</span>
+              <span id="trade-count">5,417 筆交易</span>
+            </p>
+          </div>
+
+          <div class="badge-row">
+            <div class="badge"><span class="status-dot dot-yellow"></span>Match Start</div>
+            <div class="badge"><span class="status-dot dot-pink"></span>Result Known</div>
+            <div class="badge"><span class="status-dot dot-cyan"></span>Last Trade</div>
+          </div>
+        </header>
+
+        <!-- 上方統計卡：之後可由 main.ts 動態填入 -->
+        <section class="metrics">
+          <article class="metric-card">
+            <div class="metric-label">🏷️ Top Esports</div>
+            <div class="metric-value">0.6123</div>
+            <div class="metric-desc">$12,480 USDC · 238 trades</div>
+          </article>
+          <article class="metric-card">
+            <div class="metric-label">🏷️ Weibo Gaming</div>
+            <div class="metric-value">0.3877</div>
+            <div class="metric-desc">$11,905 USDC · 224 trades</div>
+          </article>
+          <article class="metric-card">
+            <div class="metric-label">📉 Price Range</div>
+            <div class="metric-value">0.2140 ~ 0.7345</div>
+            <div class="metric-desc">可對應到目前所選 outcome</div>
+          </article>
+          <article class="metric-card">
+            <div class="metric-label">🧪 Mode</div>
+            <div class="metric-value">K 線圖 + 成交量</div>
+            <div class="metric-desc">之後切到雙隊模式時可同步更新</div>
+          </article>
+        </section>
+
+        <!-- 主圖 + volume 圖 -->
+        <section class="chart-stack">
+          <section class="panel">
+            <div class="panel-header">
+              <h3>主圖區</h3>
+              <span>預計放 K 線 / close 線 / 雙隊股價對比</span>
+            </div>
+            <div id="chart"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h3>成交量區</h3>
+              <span>預計放 bucket volume</span>
+            </div>
+            <div id="volume-chart"></div>
+          </section>
+        </section>
+
+        <!-- 原始資料表 -->
+        <section class="table-wrap">
+          <details class="raw-data" open>
+            <summary>🗂️ 原始資料（模板）</summary>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>datetime</th>
+                    <th>outcome</th>
+                    <th>price</th>
+                    <th>USDC</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>2026-03-02 18:55:00</td>
+                    <td>Top Esports</td>
+                    <td>0.6123</td>
+                    <td>120.50</td>
+                  </tr>
+                  <tr>
+                    <td>2026-03-02 19:00:30</td>
+                    <td>Weibo Gaming</td>
+                    <td>0.3877</td>
+                    <td>98.00</td>
+                  </tr>
+                  <tr>
+                    <td>2026-03-02 19:04:10</td>
+                    <td>Top Esports</td>
+                    <td>0.6250</td>
+                    <td>210.25</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </details>
+        </section>
+      </main>
+    </div>
+
+    <!-- 先保留模組入口；你之後可以在 main.ts 綁這些 DOM -->
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
