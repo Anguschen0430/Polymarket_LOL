@@ -1,4 +1,4 @@
-# Intro to Polymarket_lol
+# Intro to Polymarket_LOL
 
 Use the following to run the app:
 ```
