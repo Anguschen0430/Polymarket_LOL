@@ -1,4 +1,4 @@
-# Intro to lightweight charts
+# Intro to Polymarket_lol
 
 Use the following to run the app:
 ```
